@@ -1,0 +1,36 @@
+Plugin\SamplePayment\Entity\Card:
+    type: entity
+    table: sample_payment_card
+    repositoryClass: Plugin\SamplePayment\Repository\CardRepository
+    id:
+        id:
+            type: smallint
+            nullable: false
+            unsigned: false
+            default: '0'
+            id: true
+            generator:
+                strategy: AUTO
+    fields:
+        order_id: 
+            type: integer
+        card_no:
+            type: text
+            nullable: true
+        name01:
+            type: text
+            nullable: true
+        name02:
+            type: text
+            nullable: true
+        mm:
+            type: integer
+            nullable: true
+        yy:
+            type: integer
+            nullable: true
+        method:
+            type: integer
+            nullable: true
+
+    lifecycleCallbacks: {  }

@@ -29,9 +29,14 @@ class PaymentServiceProvider implements ServiceProviderInterface
         });
 
         $app['form.types'] = $app->share($app->extend('form.types', function ($types) use ($app) {
-            $types[] = new \Plugin\SamplePayment\Form\Type\PaymentType();
+            $types[] = new \Plugin\SamplePayment\Form\Type\PaymentType($app);
 
             return $types;
+        }));
+        $app['form.type.extensions'] = $app->share($app->extend('form.type.extensions', function ($extensions) use ($app) {
+            $extensions[] = new \Plugin\SamplePayment\Form\Extension\PaymentTypeExtension($app);
+
+            return $extensions;
         }));
 
         // カード決済会社と通信するモック

@@ -10,7 +10,7 @@ class PaymentController
     public function index(Application $app, Request $request)
     {
         $form = $app['form.factory']
-            ->createBuilder('sample.payment')
+            ->createBuilder('sample_payment')
             ->getForm();
 
         $sample = $app['eccube.plugin.service.payment']->sample();

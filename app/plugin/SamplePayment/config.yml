@@ -1,7 +1,10 @@
 name: SamplePayment
 enable: true
-form:
-    onPreSetData:
-        PaymentForm
+event: SamplePayment
 service: 
     - PaymentServiceProvider
+const: 
+    PAYMENT_ID: 10
+    PAYMENT_METHOD: ロックオン決済
+orm.path:
+    - /Resource/doctrine

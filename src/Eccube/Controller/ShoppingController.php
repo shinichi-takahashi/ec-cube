@@ -142,6 +142,7 @@ class ShoppingController extends AbstractController
                 $order = $this->orderRepository->find($this->cartService->getPreOrderId());
                 $order->setMessage($data['message']);
                 $this->orderService->commit($order);
+
                 $this->cartService->clear();
                 return $app->redirect($app['url_generator']->generate('shopping_complete'));
             }

@@ -168,6 +168,16 @@ class OrderService
 
     public function commit(\Eccube\Entity\Order $order)
     {
+        // 決済プラグイン用のイベントを仕込む
+        $event = new \Eccube\Event\ShoppingEvent($this->app);
+        $event
+          ->setApp($this->app)
+          ->setOrder($order);
+
+        $this->app['eccube.event.dispatcher']->dispatch('eccube.service.order.commit.before', $event);
+
+        $order = $event->getOrder();
+
         $order->setDelFlg(0); // todo
         $this->app['orm.em']->persist($order);
         $this->app['orm.em']->flush();

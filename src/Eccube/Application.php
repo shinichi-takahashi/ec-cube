@@ -118,6 +118,13 @@ class Application extends \Silex\Application
             $config = Yaml::parse($dir->getRealPath() . '/config.yml');
             
             if ($config['enable'] === true) {
+                // const
+                if (isset($config['const'])) {
+                    $app[$config['name']] = array(
+                        'const' => $config['const'],
+                    );
+                }
+
                 // Type: ServiceProvider
                 if (isset($config['service'])) {
                     foreach ($config['service'] as $service) {
@@ -125,7 +132,6 @@ class Application extends \Silex\Application
                         $app->register(new $class($app));
                     }
                 }
-
 
                 // Type: Event
                 if (isset($config['event'])) {

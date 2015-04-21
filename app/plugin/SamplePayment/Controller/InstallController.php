@@ -7,23 +7,19 @@ use Symfony\Component\HttpFoundation\Request;
 
 class InstallController
 {
-    const PAYMENT_ID = 10;
-
-    const PAYMENT_METHOD = 'ロックオン決済';
-
     public function index(Application $app, Request $request)
     {
         $payment = $app['orm.em']->getRepository('Eccube\Entity\Payment')
             ->findBy(array(
-                'module_id' => self::PAYMENT_ID,
+                'module_id' => $app['SamplePayment']['const']['PAYMENT_ID'],
             ));
         if (count($payment) > 0) {
             $message = '既にinstallされています。';
         } else {
             $Payment = new \Eccube\Entity\Payment;
             $Payment
-                ->setMethod(self::PAYMENT_METHOD)
-                ->setModuleId(self::PAYMENT_ID)
+                ->setMethod($app['SamplePayment']['const']['PAYMENT_ID'])
+                ->setModuleId($app['SamplePayment']['const']['PAYMENT_METHOD'])
                 ->setCharge(0)
                 ->setFix(2)
                 ->setStatus(1)

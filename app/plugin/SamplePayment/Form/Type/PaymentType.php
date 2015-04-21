@@ -9,7 +9,12 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class PaymentType extends AbstractType
 {
-    public $app;
+    private $app;
+
+    public function __construct(\Eccube\Application $app)
+    {
+        $this->app = $app;
+    }
 
     /**
      * {@inheritdoc}
@@ -17,41 +22,48 @@ class PaymentType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('number', 'text', array(
-                'constraints' => array(
-                    new Assert\NotNull(),
-                )
+            ->add('card_no', 'text', array(
+                'label' => 'カード番号',
+                'attr' => array(
+                    'class' => 'lockon_card_row',
+                ),
             ))
             ->add('name01', 'text', array(
-                'constraints' => array(
-                    new Assert\NotNull(),
-                )
+                'label' => '姓（英字）',
+                'attr' => array(
+                    'class' => 'lockon_card_row',
+                ),
             ))
             ->add('name02', 'text', array(
-                'constraints' => array(
-                    new Assert\NotNull(),
-                )
+                'label' => '名（英字）',
+                'attr' => array(
+                    'class' => 'lockon_card_row',
+                ),
             ))
             ->add('mm', 'integer', array(
-                'constraints' => array(
-                    new Assert\NotNull(),
-                )
+                'label' => '有効期限(月)',
+                'attr' => array(
+                    'class' => 'lockon_card_row',
+                ),
             ))
             ->add('yy', 'integer', array(
-                'constraints' => array(
-                    new Assert\NotNull(),
-                )
+                'label' => '有効期限(年)',
+                'attr' => array(
+                    'class' => 'lockon_card_row',
+                ),
             ))
             ->add('method', 'choice', array(
+                'label' => 'お支払い方法',
+                'attr' => array(
+                    'class' => 'lockon_card_row',
+                ),
                 'choices' => array(
                     '1' => '一括払い'
                 ),
                 'expanded' => false,
                 'multiple' => false,
-                'constraints' => array(
-                    new Assert\NotNull(),
-                )
             ))
+            ->addEventSubscriber(new \Eccube\Event\FormEventSubscriber());
         ;
     }
 
