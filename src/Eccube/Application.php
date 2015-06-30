@@ -23,21 +23,20 @@
 
 namespace Eccube;
 
+use Monolog\Logger;
+use Monolog\Handler\FingersCrossed\ErrorLevelActivationStrategy;
+use Monolog\Handler\FingersCrossedHandler;
+use Monolog\Handler\RotatingFileHandler;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Eccube\Application\ApplicationTrait;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\Form\FormBuilder;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Monolog\Logger;
-use Monolog\Handler\FingersCrossedHandler;
-use Monolog\Handler\RotatingFileHandler;
-use Monolog\Handler\FingersCrossed\ErrorLevelActivationStrategy;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Yaml\Yaml;
 
 class Application extends ApplicationTrait
 {
@@ -66,7 +65,7 @@ class Application extends ApplicationTrait
         // init provider
         $this->register(new \Silex\Provider\UrlGeneratorServiceProvider());
         $this->register(new \Silex\Provider\FormServiceProvider());
-        $this->register(new \Silex\Provider\ValidatorServiceProvider());
+        $this->register(new \Eccube\ServiceProvider\ValidatorServiceProvider());
 
         $app = $this;
         $this->error(function (\Exception $e, $code) use ($app) {
@@ -191,7 +190,7 @@ class Application extends ApplicationTrait
         ));
 
         $levels = Logger::getLevels();
-        $this['monolog'] = $this->share($this->extend('monolog', function($monolog, $this) use ($levels, $file) {
+        $this['monolog'] = $this->share($this->extend('monolog', function ($monolog, $this) use ($levels, $file) {
 
             $RotateHandler = new RotatingFileHandler($file, $this['config']['log']['max_files'], $this['config']['log']['log_level']);
             $RotateHandler->setFilenameFormat(
@@ -216,8 +215,8 @@ class Application extends ApplicationTrait
             'session.storage.save_path' => $this['config']['root_dir'] . '/app/cache/eccube/session',
             'session.storage.options' => array(
                 'name' => 'eccube',
-                'cookie_path'     => $this['config']['root_urlpath'],
-                'cookie_secure'   => $this['config']['force_ssl'],
+                'cookie_path' => $this['config']['root_urlpath'],
+                'cookie_secure' => $this['config']['force_ssl'],
                 'cookie_lifetime' => $this['config']['cookie_lifetime'],
                 'cookie_httponly' => true,
                 // cookie_domainは指定しない
@@ -229,11 +228,26 @@ class Application extends ApplicationTrait
     public function initLocale()
     {
         $this->register(new \Silex\Provider\TranslationServiceProvider(), array(
-            'locale' => 'ja',
+            'locale' => $this['config']['locale'],
         ));
         $this['translator'] = $this->share($this->extend('translator', function ($translator, \Silex\Application $app) {
             $translator->addLoader('yaml', new \Symfony\Component\Translation\Loader\YamlFileLoader());
-            $translator->addResource('yaml', __DIR__ . '/Resource/locale/ja.yml', 'ja');
+
+            $r = new \ReflectionClass('Symfony\Component\Validator\Validator');
+            $file = dirname($r->getFilename()) . '/Resources/translations/validators.' . $app['locale'] . '.xlf';
+            if (file_exists($file)) {
+                $translator->addResource('xliff', $file, $app['locale'], 'validators');
+            }
+
+            $file = __DIR__ . '/Resource/locale/validator.' . $app['locale'] . '.yml';
+            if (file_exists($file)) {
+                $translator->addResource('yaml', $file, $app['locale'], 'validators');
+            }
+
+            $file = __DIR__ . '/Resource/locale/message.' . $app['locale'] . '.yml';
+            if (file_exists($file)) {
+                $translator->addResource('yaml', $file, $app['locale']);
+            }
 
             return $translator;
         }));
@@ -366,7 +380,7 @@ class Application extends ApplicationTrait
             $config = Yaml::parse($dir->getRealPath() . '/config.yml');
 
             // Doctrine Extend
-            if (isset($config['orm.path']) and is_array( $config['orm.path'])) {
+            if (isset($config['orm.path']) and is_array($config['orm.path'])) {
                 $paths = array();
                 foreach ($config['orm.path'] as $path) {
                     $paths[] = $pluginBasePath . '/' . $config['name'] . $path;
@@ -477,7 +491,7 @@ class Application extends ApplicationTrait
             }
             // const
             if (isset($config['const'])) {
-                $this['config'] = $this->share(function($eccubeConfig) use ($config) {
+                $this['config'] = $this->share($this->extend('config', function ($eccubeConfig) use ($config) {
                     $eccubeConfig[$config['name']] = array(
                         'const' => $config['const'],
                     );
